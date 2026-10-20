@@ -36,18 +36,16 @@
     min-height: 100vh;
   }
 
-  select,
-  input,
-  textarea {
-    color: #e5e5e5 !important;
-    background-color: #1e1e1e !important;
-  }
+/* Nota: Override gelap telah dibuang kerana App.jsx menguruskan tema
+   melalui inline style (isDarkMode). `!important` di sini akan
+   mengalahkan inline style dan memecahkan Mod Siang. */
 
-  select option {
-    background-color: #1e1e1e !important;
-    color: #e5e5e5 !important;
-  }
-
+   select:disabled,
+   input:disabled {
+     opacity: 0.35;
+     cursor: not-allowed;
+   }
+   
   select:disabled,
   input:disabled {
     opacity: 0.35;

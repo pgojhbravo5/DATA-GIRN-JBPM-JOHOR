@@ -1619,12 +1619,32 @@ export default function App() {
   const stats = useMemo(() => {
     const statusCounts = {};
     let ttCount = 0;
-
+  
     filteredData.forEach((d) => {
-      // Kira SEMUA status (bukan hanya BAIK & ROSAK)
-      const s = normalizeStatus(d[activeStatusCol]);
-      statusCounts[s] = (statusCounts[s] || 0) + 1;
-
+      // Tentukan status efektif:
+      // - Jika bulan dipilih: guna status pertama yang BUKAN 'TIADA DATA'
+      //   daripada kalangan bulan yang dipilih (fallback ke bulan terbaru)
+      // - Jika tiada bulan: guna status SEMASA
+      let effectiveStatus = 'TIADA DATA';
+  
+      if (filterBulanDipilih.length > 0) {
+        for (const mc of selectedMonthColumns) {
+          if (mc.status && d[mc.status]) {
+            const candidate = normalizeStatus(d[mc.status]);
+            if (candidate !== 'TIADA DATA') {
+              effectiveStatus = candidate;
+              break; // Ambil bulan yang pertama ada data sahih
+            }
+          }
+        }
+      } else if (activeStatusCol) {
+        effectiveStatus = normalizeStatus(d[activeStatusCol]);
+      }
+  
+      if (effectiveStatus !== 'TIADA DATA') {
+        statusCounts[effectiveStatus] = (statusCounts[effectiveStatus] || 0) + 1;
+      }
+  
       // Kira TT dibuka
       let hasTT = false;
       if (filterBulanDipilih.length > 0) {
@@ -1650,10 +1670,10 @@ export default function App() {
       }
       if (hasTT) ttCount++;
     });
-
+  
     return {
       total: filteredData.length,
-      statusCounts, // { BAIK: 406, ROSAK: 68, ... }
+      statusCounts,
       ttCount,
     };
   }, [
@@ -1663,7 +1683,7 @@ export default function App() {
     filterBulanDipilih,
     selectedMonthColumns,
   ]);
-
+  
   const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
   const paginatedData = useMemo(
     () =>
